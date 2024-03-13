@@ -8,6 +8,10 @@ const cors = require("cors");
 
 const PORT = process.env.PORT || 3000;
 
+const mongoose = require("mongoose");
+const connectDB = require("./config/dbConnect");
+connectDB();
+
 app.use(express.json());
 
 // Enable cors - allow connections
@@ -27,7 +31,16 @@ app.all("*", (req, res) => {
   res.send("404 Resource Not Found");
 });
 
-// Start the server //
-app.listen(PORT, () => {
-  console.log(`SERVER RUNNING ON PORT ${PORT}`);
+/// Custom error handler ///
+
+const errorHandler = require("./middleware/errorHandler");
+app.use(errorHandler);
+
+/// Once database connected is open, start the Express server
+mongoose.connection.once("open", () => {
+  console.log("Connected to Mongo");
+
+  app.listen(PORT, () => {
+    console.log(`SERVER RUNNING ON PORT ${PORT}`);
+  });
 });
