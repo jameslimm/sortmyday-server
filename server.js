@@ -5,6 +5,7 @@ const app = express();
 const path = require("path");
 
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
 const PORT = process.env.PORT || 3000;
 
@@ -12,13 +13,25 @@ const mongoose = require("mongoose");
 const connectDB = require("./config/dbConnect");
 connectDB();
 
+app.use(cookieParser());
 app.use(express.json());
 
 // Enable cors - allow connections
 // from any origin TODO - Change this later.
-app.use(cors());
 
-app.use("/tasks", require("./routes/tasksRoutes"));
+app.use(require("./middleware/credentials"));
+
+const corsOptions = {
+  origin: "http://localhost:5173",
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+
+const { authToken } = require("./middleware/auth");
+
+app.use("/tasks", authToken, require("./routes/tasksRoutes"));
+app.use("/user", require("./routes/userRoutes"));
 
 /// Handle 404 Error ///
 app.all("*", (req, res) => {
