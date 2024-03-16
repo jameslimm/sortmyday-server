@@ -18,7 +18,9 @@ const getAllTasks = async (req, res, next) => {
 
 const createNewTask = async (req, res, next) => {
   try {
-    const { title } = req.body;
+    const { title, tag } = req.body;
+
+    console.log("NEW TASK", { title, tag });
 
     if (!title) {
       return res.status(400).json({ message: "Missing data" });
@@ -32,6 +34,7 @@ const createNewTask = async (req, res, next) => {
     const taskObj = {
       user_id: req.userId,
       title,
+      tag,
     };
 
     const task = await Task.create(taskObj);
@@ -58,14 +61,12 @@ const updateTask = async (req, res, next) => {
       .lean()
       .exec();
 
-    console.log(duplicate);
     if (duplicate?.length) {
       return res.status(406).json({ message: "Duplicate task found." });
     }
 
     // find the task to be updated
     const task = await Task.findById(_id).exec();
-    console.log(task);
     if (!task) {
       return res.status(400).json({ message: "Task not found" });
     }

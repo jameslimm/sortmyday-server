@@ -5,10 +5,6 @@ const authToken = async (req, res, next) => {
   try {
     const { authToken } = req.cookies;
 
-    console.log("ROUTE:", req.route);
-    console.log("COOKIES:", req.cookies);
-    console.log("AUTHTOKEN", authToken);
-
     if (!authToken) {
       return res.sendStatus(403);
     }
