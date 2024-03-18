@@ -1,6 +1,25 @@
 const Task = require("../models/Task");
 
-// @define Get all tasks (TODO: for logged in user)
+// @define Get single task
+// @route GET /tasks/:taskId
+// @access Private
+
+const getTask = async (req, res, next) => {
+  try {
+    const { taskId } = req.params;
+
+    if (!taskId) return res.status(400).json({ message: "missing id" });
+
+    const task = await Task.findOne({ _id: taskId, user_id: req.userId }).lean().exec();
+
+    if (!task) return res.status(400).json({ message: "Task not found" });
+    res.json(task);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @define Get all tasks
 // @route GET /tasks
 // @access Private
 const getAllTasks = async (req, res, next) => {
@@ -45,19 +64,22 @@ const createNewTask = async (req, res, next) => {
 };
 
 // @desc Update task
-// @path PUT /tasks
+// @path PUT /tasks/:taskId
 // @access Private
 
 const updateTask = async (req, res, next) => {
   try {
-    const { _id, title, completed } = req.body;
+    const { taskId } = req.params;
+    const { title, tag, completed } = req.body;
 
-    if (!_id || !title || typeof completed !== "boolean") {
+    console.log("UPDATE", { taskId, title, tag, completed });
+
+    if (!taskId || !tag || !title || typeof completed !== "boolean") {
       return res.status(400).json({ message: "All fields required" });
     }
 
     // check for duplicate title
-    const duplicate = await Task.find({ title, _id: { $ne: _id }, user_id: req.userId })
+    const duplicate = await Task.find({ title, _id: { $ne: taskId }, user_id: req.userId })
       .lean()
       .exec();
 
@@ -66,13 +88,14 @@ const updateTask = async (req, res, next) => {
     }
 
     // find the task to be updated
-    const task = await Task.findById(_id).exec();
+    const task = await Task.findById(taskId).exec();
     if (!task) {
       return res.status(400).json({ message: "Task not found" });
     }
 
     task.title = title;
     task.completed = completed;
+    task.tag = tag;
 
     await task.save();
     res.status(200).json({ message: "Task updated" });
@@ -100,4 +123,4 @@ const deleteTask = async (req, res, next) => {
   }
 };
 
-module.exports = { createNewTask, getAllTasks, updateTask, deleteTask };
+module.exports = { createNewTask, getAllTasks, updateTask, deleteTask, getTask };
