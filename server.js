@@ -4,6 +4,7 @@ const express = require("express");
 const app = express();
 const path = require("path");
 
+const helmet = require("helmet");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
@@ -16,17 +17,16 @@ connectDB();
 app.use(cookieParser());
 app.use(express.json());
 
-// Enable cors - allow connections
-// from any origin TODO - Change this later.
-
 app.use(require("./middleware/credentials"));
 
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: process.env.CORS_ORIGIN,
   credentials: true,
 };
 
 app.use(cors(corsOptions));
+
+app.use(helmet({ crossOriginResourcePolicy: { policy: "same-site" } }));
 
 const { authToken } = require("./middleware/auth");
 

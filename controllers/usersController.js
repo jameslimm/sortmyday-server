@@ -27,17 +27,17 @@ const createNewUser = async (req, res, next) => {
     const { username, password } = req.body;
 
     if (!username || !password)
-      res.status(400).json({ message: "Missing username and/or password" });
+      return res.status(400).json({ message: "Missing username and/or password" });
 
     if (await User.findOne({ username }).lean().exec())
-      res.status(400).json({ message: "Duplicate username" });
+      return res.status(400).json({ message: "Duplicate username", errorFields: ["username"] });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const userObject = { username, password: hashedPassword, authToken: "" };
 
     const user = await User.create(userObject);
-    if (!user) res.status(500).json({ message: "User account unable to be saved" });
+    if (!user) return res.status(500).json({ message: "User account unable to be saved" });
 
     const authToken = jwt.sign({ userId: user._id }, process.env.JWT_TOKEN_SECRET, {
       expiresIn: "10d",

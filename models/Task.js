@@ -17,7 +17,7 @@ const taskSchema = new mongoose.Schema(
     },
     tag: {
       type: String,
-      default: "inbox",
+      default: "",
     },
   },
   { timestamps: true }

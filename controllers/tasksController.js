@@ -74,7 +74,7 @@ const updateTask = async (req, res, next) => {
 
     console.log("UPDATE", { taskId, title, tag, completed });
 
-    if (!taskId || !tag || !title || typeof completed !== "boolean") {
+    if (!taskId || !title || typeof completed !== "boolean") {
       return res.status(400).json({ message: "All fields required" });
     }
 
