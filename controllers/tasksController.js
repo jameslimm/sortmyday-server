@@ -39,8 +39,6 @@ const createNewTask = async (req, res, next) => {
   try {
     const { title, tag } = req.body;
 
-    console.log("NEW TASK", { title, tag });
-
     if (!title) {
       return res.status(400).json({ message: "Missing data" });
     }
@@ -71,8 +69,6 @@ const updateTask = async (req, res, next) => {
   try {
     const { taskId } = req.params;
     const { title, tag, completed } = req.body;
-
-    console.log("UPDATE", { taskId, title, tag, completed });
 
     if (!taskId || !title || typeof completed !== "boolean") {
       return res.status(400).json({ message: "All fields required" });
@@ -111,6 +107,7 @@ const updateTask = async (req, res, next) => {
 const deleteTask = async (req, res, next) => {
   try {
     const { _id } = req.body;
+
     if (!_id) {
       return res.status(400).json({ message: "Task not found" });
     }

@@ -12,7 +12,7 @@ const getUser = async (req, res, next) => {
 
     if (!user) res.status(400).json({ message: "User not found", user: null });
 
-    res.json({ user: user });
+    res.json({ user });
   } catch (err) {
     next(err);
   }
@@ -28,6 +28,9 @@ const createNewUser = async (req, res, next) => {
 
     if (!username || !password)
       return res.status(400).json({ message: "Missing username and/or password" });
+
+    if (!new RegExp("^[a-zA-Z]+$").test(username))
+      return res.status(400).json({ message: "Invalid username characters" });
 
     if (await User.findOne({ username }).lean().exec())
       return res.status(400).json({ message: "Duplicate username", errorFields: ["username"] });
@@ -64,8 +67,6 @@ const createNewUser = async (req, res, next) => {
 // @access Public
 
 const loginUser = async (req, res, next) => {
-  console.log("LOGIN");
-  console.log("body", req.body);
   try {
     const { username, password } = req.body;
 
@@ -106,12 +107,38 @@ const loginUser = async (req, res, next) => {
   }
 };
 
+// @desc Update user accoutn
+// @route PUT /user
+// @access Private
+
+const updateUser = async (req, res, next) => {
+  try {
+    const { password, prefs } = req.body;
+    const user = await User.findOne({ _id: req.userId }).select("-password").exec();
+
+    // if a new password has been passed, hash it and save
+    if (password) {
+      // todo - validate passed password
+      const hashedPassword = await bcrypt.hash(password, 10);
+      user.password = hashedPassword;
+    }
+
+    if (prefs) {
+      user.prefs = prefs;
+    }
+
+    await user.save();
+
+    res.json({ message: "user updated" });
+  } catch (err) {
+    next(err);
+  }
+};
 // @desc Logout user
 // @route /user/logout
 // @access Private
 
 const logoutUser = async (req, res, next) => {
-  console.log("LOGGING OUT");
   try {
     // overwrite the cookie
     res.clearCookie("authToken", { httpOnly: true });
@@ -121,4 +148,4 @@ const logoutUser = async (req, res, next) => {
   }
 };
 
-module.exports = { createNewUser, loginUser, logoutUser, getUser };
+module.exports = { createNewUser, loginUser, logoutUser, getUser, updateUser };

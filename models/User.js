@@ -9,6 +9,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  prefs: {
+    type: Object,
+    default: {},
+  },
 });
 
 const User = mongoose.model("User", userSchema);
