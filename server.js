@@ -31,7 +31,7 @@ app.use(helmet({ crossOriginResourcePolicy: { policy: "same-site" } }));
 const { authToken } = require("./middleware/auth");
 
 // DELAY RESPONSE MIDDLEWARE - TESTING ONLY, DON'T DEPLOY
-// app.use((req, res, next) => setTimeout(next, 2000));
+// app.use((req, res, next) => setTimeout(next, 1500));
 
 app.use("/tasks", authToken, require("./routes/tasksRoutes"));
 app.use("/user", require("./routes/userRoutes"));

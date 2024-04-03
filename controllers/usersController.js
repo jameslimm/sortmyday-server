@@ -26,15 +26,25 @@ const createNewUser = async (req, res, next) => {
   try {
     const { username, password } = req.body;
 
-    if (!username || !password)
-      return res.status(400).json({ message: "Missing username and/or password" });
+    // Basic validation - TODO - Add Zod for more robust validation.
+    const errors = {};
+    if (!username) errors.username = "Username required.";
+    if (!password) errors.password = "Password required.";
 
-    if (!new RegExp("^[a-zA-Z]+$").test(username))
-      return res.status(400).json({ message: "Invalid username characters" });
+    if (username.length > 14 || username.length < 4)
+      errors.username = "Username must be between 4 and 14 characters.";
+    if (password.length > 14 || password.length < 4)
+      errors.password = "Password must be between 4 and 14 characters.";
 
-    if (await User.findOne({ username }).lean().exec())
-      return res.status(400).json({ message: "Duplicate username", errorFields: ["username"] });
+    if (!new RegExp("^[a-zA-Z]+$").test(username)) errors.username = "Invalid username characters.";
 
+    if (await User.findOne({ username }).lean().exec()) errors.username = "Duplicate user account.";
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ message: "Unable to create user account.", errors });
+    }
+
+    // All OK!
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const userObject = { username, password: hashedPassword, authToken: "" };
@@ -70,8 +80,12 @@ const loginUser = async (req, res, next) => {
   try {
     const { username, password } = req.body;
 
-    if (!username || !password) {
-      return res.status(400).json({ message: "Missing username and/or password" });
+    const errors = {};
+    if (!username) errors.username = "Username required.";
+    if (!password) errors.password = "Password required.";
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ message: "Unable to log in", errors });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -79,13 +93,18 @@ const loginUser = async (req, res, next) => {
     // get the user account
     const user = await User.findOne({ username }).exec();
     if (!user) {
-      return res.status(400).json({ message: "Invalid user credentials" });
+      return res
+        .status(400)
+        .json({ message: "Invalid user credentials", errors: { username: "Username unknown." } });
     }
 
     // check password
     const match = await bcrypt.compare(password, user.password);
     if (!match) {
-      return res.status(400).json({ message: "Invalid user credentials" });
+      return res.status(400).json({
+        message: "Invalid user credentials",
+        errors: { password: "Password incorrect." },
+      });
     }
 
     /// CREATE TOKEN AND COOKIE ///
