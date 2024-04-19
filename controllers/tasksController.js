@@ -37,7 +37,7 @@ const getAllTasks = async (req, res, next) => {
 
 const createNewTask = async (req, res, next) => {
   try {
-    const { title, tag } = req.body;
+    const { title, tag, due } = req.body;
 
     if (!title) {
       return res.status(400).json({ message: "Missing data" });
@@ -52,6 +52,7 @@ const createNewTask = async (req, res, next) => {
       user_id: req.userId,
       title,
       tag,
+      due,
     };
 
     const task = await Task.create(taskObj);
