@@ -69,7 +69,7 @@ const createNewTask = async (req, res, next) => {
 const updateTask = async (req, res, next) => {
   try {
     const { taskId } = req.params;
-    const { title, tag, completed } = req.body;
+    const { title, tag, due, completed } = req.body;
 
     if (!taskId || !title || typeof completed !== "boolean") {
       return res.status(400).json({ message: "All fields required" });
@@ -93,6 +93,7 @@ const updateTask = async (req, res, next) => {
     task.title = title;
     task.completed = completed;
     task.tag = tag;
+    task.due = due;
 
     await task.save();
     res.status(200).json({ message: "Task updated" });
